@@ -2,7 +2,9 @@
 #include <ros.h>
 #include <geometry_msgs/Twist.h>
 #include <geometry_msgs/Point.h>
+#include <std_msgs/String.h>
 #include <math.h>
+#include <string>
 
 #include "PID.h"
 
@@ -29,14 +31,12 @@ double vl;  // m/s, desired velocity for left  wheels
 double vr;  // m/s, desired velocity for right wheels
 
 
-geometry_msgs::Point out_msg;
+std_msgs::String out_msg;
 ros::Publisher pubOut("mbed_out", &out_msg);
 
 
-void pub(double x, double y, double z) {
-    out_msg.x = x;
-    out_msg.y = y;
-    out_msg.z = z;
+void pub(const char* str) {
+    out_msg.data = str;
     pubOut.publish(&out_msg);
 }
 
@@ -53,10 +53,29 @@ void velocityCallback(const geometry_msgs::Twist& msg){
   leftPID = fabs(vl);
   rightPID = fabs(vr);
 
-  pub(vl, vr, 0);
+  std::string str = "Vl = ";
+  str += std::to_string(vl);
+  str += ", Vr = ";
+  str += std::to_string(vr);
+  pub(str.data());
 }
 
-ros::Subscriber<geometry_msgs::Twist> sub("cmd_vel", &velocityCallback);
+ros::Subscriber<geometry_msgs::Twist> velocitySub("cmd_vel", &velocityCallback);
+
+void tuneCallback(const geometry_msgs::Point& msg) {
+  leftPID.setGains(msg.x, msg.y, msg.z);
+  rightPID.setGains(msg.x, msg.y, msg.z);
+
+  std::string str = "Kp = ";
+  str += std::to_string(msg.x);
+  str += ", Ki = ";
+  str += std::to_string(msg.y);
+  str += ", Kd = ";
+  str += std::to_string(msg.z);
+  pub(str.data());
+}
+
+ros::Subscriber<geometry_msgs::Point> tuneSub("tune", &tuneCallback);
 
 void tickerCallback() {
   leftPID.step();
@@ -65,7 +84,8 @@ void tickerCallback() {
 
 int main() {
     nh.initNode();
-    nh.subscribe(sub);
+    nh.subscribe(velocitySub);
+    nh.subscribe(tuneSub);
     nh.advertise(pubOut);
 
     eventThread.start(

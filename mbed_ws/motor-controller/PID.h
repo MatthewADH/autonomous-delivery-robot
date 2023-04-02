@@ -8,12 +8,29 @@ class PID {
 public:
   PID(PinName feedbackPin, PinName outputPin, float kp, float ki, float kd, 
         float sampleTime) :
-        feedback(feedbackPin), output(outputPin), KP(kp), KI(ki), KD(kd), 
+        feedback(feedbackPin), output(outputPin), kp(kp), ki(ki), kd(kd), 
         T(sampleTime) {
     
     output.period(T);
-    reference = 0.5;
   };
+
+  void setKp(float val) {
+    kp = val;
+  }
+
+  void setKi(float val) {
+    ki = val;
+  }
+
+  void setKd(float val) {
+    kd = val;
+  }
+
+  void setGains(float p, float i, float d) {
+    setKp(p);
+    setKi(i);
+    setKd(d);
+  }
 
   void setReference(const float& ref) {
     reference = ref;
@@ -29,7 +46,7 @@ public:
     if (fequal(controlSignal, output.read()) || error * controlSignal < 0)
       area = prevArea + error * T;
 
-    controlSignal  = KP * error + KI * area + KD * rate;
+    controlSignal  = kp * error + ki * area + kd * rate;
     output = clamp(controlSignal, MIN_DUTY, MAX_DUTY);
 
     prevError = error;
@@ -43,7 +60,7 @@ private:
   AnalogIn feedback;  // Voltage representing wheel speed from tachometer 
   PwmOut output;  // Motor voltage control signal via varying duty cycle 
   
-  const float KP, KI, KD;
+  float kp, ki, kd;
   const float T;  // sample time
 
   float reference;
