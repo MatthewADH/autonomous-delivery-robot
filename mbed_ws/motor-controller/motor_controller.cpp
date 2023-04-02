@@ -16,7 +16,8 @@ const static float KI = 1.0;
 const static float KD = 0.0;
 
 ros::NodeHandle nh;
-DigitalOut statusLight(LED_GREEN);
+DigitalOut greenLed(LED_GREEN);
+DigitalOut redLed(LED_RED);
 
 Thread eventThread;
 EventQueue eventQueue;
@@ -96,6 +97,7 @@ int main() {
 
     while (1) {
         nh.spinOnce();
+        redLed = nh.connected();
         wait_ms(1);
     }
 }
