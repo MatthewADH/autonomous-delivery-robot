@@ -6,17 +6,24 @@
 
 class Tachometer {
 public:
-    Tachometer(PinName pin)
-            : encoder(pin, PullUp) {
+  Tachometer(PinName pin, float hz2mps)
+        : encoder(pin), HZ2MPS(hz2mps) {
         
-        encoder.rise(Callback<void()>(this, &Tachometer::encoderCallback));
-        ticker.attach(
-              Callback<void()>(this, &Tachometer::tickerCallback), UPDATE_PERIOD);
-    };
+    encoder.rise(Callback<void()>(this, &Tachometer::encoderCallback));
+    ticker.attach(Callback<void()>(this, &Tachometer::tickerCallback), UPDATE_PERIOD);
+  };
 
-    float getFrequency() {
-        return frequency;
-    };
+  float getFrequency() {
+    return frequency;
+  };
+
+  float getSpeed() {
+    return frequency * HZ2MPS;
+  }
+
+  operator float() {
+    return getSpeed();
+  }
 
 
 private:
@@ -24,6 +31,8 @@ private:
     Ticker ticker;
 
     constexpr static float UPDATE_PERIOD = 1 / 50.0;
+
+    const float HZ2MPS;
 
     int count = 0;
     int numZeros = 0;

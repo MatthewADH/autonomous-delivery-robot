@@ -4,12 +4,14 @@
 #include <mbed.h>
 #include <math.h>
 
+#include "Tachometer.h"
+
 class PID {
 public:
-  PID(PinName feedbackPin, PinName outputPin, float kp, float ki, float kd, 
-        float sampleTime) :
-        feedback(feedbackPin), output(outputPin), kp(kp), ki(ki), kd(kd), 
-        T(sampleTime) {
+  PID(PinName feedbackPin, float hz2mps, PinName outputPin, float kp,
+        float ki, float kd, float sampleTime) :
+        feedback(feedbackPin, hz2mps), output(outputPin), kp(kp), ki(ki),
+        kd(kd), T(sampleTime) {
     
     output.period(T);
   };
@@ -57,7 +59,7 @@ private:
   constexpr static float MIN_DUTY = 0.0;
   constexpr static float MAX_DUTY = 1.0;
 
-  AnalogIn feedback;  // Voltage representing wheel speed from tachometer 
+  Tachometer feedback;
   PwmOut output;  // Motor voltage control signal via varying duty cycle 
   
   float kp, ki, kd;

@@ -11,6 +11,7 @@
 
 const static double D = 0.3;  // m, distance between left and right wheels
 const static float SAMPLE_TIME = 1/50.0;
+const static float HZ2MPS = 1e-4;  // Scaling factor for tachometer, Hz/mps
 const static float KP = 1.0;
 const static float KI = 1.0;
 const static float KD = 0.0;
@@ -23,8 +24,8 @@ Thread eventThread;
 EventQueue eventQueue;
 Ticker ticker;
 
-PID leftPID(PTB0, PTB1, KP, KI, KD, SAMPLE_TIME);
-PID rightPID(PTB3, PTC2, KP, KI, KD, SAMPLE_TIME);
+PID leftPID(PTA13, HZ2MPS, PTB1, KP, KI, KD, SAMPLE_TIME);
+PID rightPID(PTD5, HZ2MPS, PTC2, KP, KI, KD, SAMPLE_TIME);
 DigitalOut leftReverse(PTB2);
 DigitalOut rightReverse(PTC1);
 
