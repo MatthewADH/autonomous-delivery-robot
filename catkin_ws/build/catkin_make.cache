@@ -1,0 +1,2 @@
+pkg_visualize
+-DCATKIN_DEVEL_PREFIX=/home/matthew/autonomous-delivery-robot/catkin_ws/devel -DCMAKE_INSTALL_PREFIX=/home/matthew/autonomous-delivery-robot/catkin_ws/install -G Unix Makefiles
