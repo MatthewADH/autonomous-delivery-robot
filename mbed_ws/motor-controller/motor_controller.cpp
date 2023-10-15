@@ -9,7 +9,7 @@
 #include "PID.h"
 
 
-const static double D = 0.3;  // m, distance between left and right wheels
+const static double D = 0.4;  // m, distance between left and right wheels
 const static float SAMPLE_TIME = 1/50.0;
 const static float HZ2MPS = 1e-4;  // Scaling factor for tachometer, Hz/mps
 const static float KP = 1.0;
@@ -24,10 +24,14 @@ Thread eventThread;
 EventQueue eventQueue;
 Ticker ticker;
 
-PID leftPID(PTA13, HZ2MPS, PTB1, KP, KI, KD, SAMPLE_TIME);
-PID rightPID(PTD5, HZ2MPS, PTC2, KP, KI, KD, SAMPLE_TIME);
-DigitalOut leftReverse(PTB2);
-DigitalOut rightReverse(PTC1);
+PID leftPID(PTD1, HZ2MPS, PTC9, KP, KI, KD, SAMPLE_TIME);
+PID rightPID(PTD2, HZ2MPS, PTA13, KP, KI, KD, SAMPLE_TIME);
+
+DigitalOut leftForward(PTC8);
+DigitalOut leftReverse(PTA5);
+
+DigitalOut rightForward(PTD5);
+DigitalOut rightReverse(PTD0);
 
 double vl;  // m/s, desired velocity for left  wheels
 double vr;  // m/s, desired velocity for right wheels
@@ -49,7 +53,9 @@ void velocityCallback(const geometry_msgs::Twist& msg){
 
   // Set direction of motors
   leftReverse = vl < 0;
+  leftForward = !leftReverse;
   rightReverse = vr < 0;
+  rightForward = !rightReverse;
 
   // Set speed of motors
   leftPID = fabs(vl);
