@@ -42,7 +42,15 @@ public:
     setReference(ref);
   }
 
+  operator float () {
+    return output.read();
+  }
+
   void step() {
+    if (reference == 0) {
+      output = 0;
+      return;
+    }
     error = reference - feedback;
     rate = (error - prevError) / T;
     if (fequal(controlSignal, output.read()) || error * controlSignal < 0)
