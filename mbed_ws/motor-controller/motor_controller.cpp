@@ -15,6 +15,7 @@ const static float HZ2MPS = 1e-4;  // Scaling factor for tachometer, Hz/mps
 const static float KP = 1.0;
 const static float KI = 1.0;
 const static float KD = 0.0;
+const static float MAX_REVERSABLE = 0.05;
 
 ros::NodeHandle nh;
 DigitalOut greenLed(LED_GREEN);
@@ -36,7 +37,6 @@ DigitalOut rightReverse(PTD0);
 double vl;  // m/s, desired velocity for left  wheels
 double vr;  // m/s, desired velocity for right wheels
 
-
 std_msgs::String out_msg;
 ros::Publisher pubOut("mbed_out", &out_msg);
 
@@ -50,16 +50,6 @@ void velocityCallback(const geometry_msgs::Twist& msg){
   // Calculate desired left and right wheel velocity
   vl = msg.linear.x - D * msg.angular.z / 2;
   vr = msg.linear.x + D * msg.angular.z / 2;
-
-  // Set direction of motors
-  leftReverse = vl < 0;
-  leftForward = !leftReverse;
-  rightReverse = vr < 0;
-  rightForward = !rightReverse;
-
-  // Set speed of motors
-  leftPID = fabs(vl);
-  rightPID = fabs(vr);
 
   std::string str = "Vl = ";
   str += std::to_string(vl);
@@ -86,6 +76,29 @@ void tuneCallback(const geometry_msgs::Point& msg) {
 ros::Subscriber<geometry_msgs::Point> tuneSub("tune", &tuneCallback);
 
 void tickerCallback() {
+  if (vl != 0 && leftForward != (vl > 0)) {    // if motor direction needs to flip 
+    if 	(leftPID < MAX_REVERSABLE) {
+      leftReverse = vl < 0;
+      leftForward = !leftReverse;
+      leftPID = fabs(vl);
+    }
+    else
+      leftPID = 0;
+  }
+  else
+    leftPID = fabs(vl);
+  if (vr != 0 && rightForward != (vr > 0)) {    // if motor direction needs to flip 
+    if 	(rightPID < MAX_REVERSABLE) {
+      rightReverse = vr < 0;
+      rightForward = !rightReverse;
+      rightPID = fabs(vr);
+    }
+    else
+      rightPID = 0;
+  }
+  else
+    rightPID = fabs(vr);
+
   leftPID.step();
   rightPID.step();
 }
@@ -105,7 +118,7 @@ int main() {
     while (1) {
         nh.spinOnce();
         redLed = nh.connected();
-        wait_ms(1);
+        wait_ms(20);
     }
 }
 
