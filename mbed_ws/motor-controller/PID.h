@@ -10,7 +10,7 @@ class PID {
 public:
   PID(PinName feedbackPin, float hz2mps, PinName outputPin, float kp,
         float ki, float kd, float sampleTime) :
-        feedback(feedbackPin, hz2mps), output(outputPin), kp(kp), ki(ki),
+        feedback(feedbackPin, hz2mps, sampleTime), output(outputPin), kp(kp), ki(ki),
         kd(kd), T(sampleTime) {
     
     output.period(T);
@@ -46,18 +46,22 @@ public:
     return output.read();
   }
 
+
+  float getFeedback() {
+    return feedback;
+  }
+
   void step() {
-    if (reference == 0) {
-      output = 0;
-      return;
-    }
+    feedback.update();
     error = reference - feedback;
     rate = (error - prevError) / T;
     if (fequal(controlSignal, output.read()) || error * controlSignal < 0)
       area = prevArea + error * T;
 
     controlSignal  = kp * error + ki * area + kd * rate;
-    output = clamp(controlSignal, MIN_DUTY, MAX_DUTY);
+    if (reference == 0) output = 0.2;
+    else
+      output = 0.2; //clamp(controlSignal, MIN_DUTY, MAX_DUTY);
 
     prevError = error;
     prevArea = area;

@@ -11,21 +11,18 @@
 
 const static double D = 0.4;  // m, distance between left and right wheels
 const static float SAMPLE_TIME = 1/50.0;
-const static float HZ2MPS = 1e-4;  // Scaling factor for tachometer, Hz/mps
-const static float KP = 1.0;
+const static float HZ2MPS = 3e-4;  // Scaling factor for tachometer, Hz/mps
+const static float KP = 10.0;
 const static float KI = 1.0;
 const static float KD = 0.0;
-const static float MAX_REVERSABLE = 0.05;
+const static float MAX_REVERSABLE = 0.001;
+const static int REVERSE_COUNT = 10;
 
 ros::NodeHandle nh;
 DigitalOut greenLed(LED_GREEN);
 DigitalOut redLed(LED_RED);
 
-Thread eventThread;
-EventQueue eventQueue;
-Ticker ticker;
-
-PID leftPID(PTD1, HZ2MPS, PTC9, KP, KI, KD, SAMPLE_TIME);
+PID leftPID(PTA12, HZ2MPS, PTC9, KP, KI, KD, SAMPLE_TIME);
 PID rightPID(PTD2, HZ2MPS, PTA13, KP, KI, KD, SAMPLE_TIME);
 
 DigitalOut leftForward(PTC8);
@@ -34,8 +31,14 @@ DigitalOut leftReverse(PTA5);
 DigitalOut rightForward(PTD5);
 DigitalOut rightReverse(PTD0);
 
+Thread eventThread;
+EventQueue eventQueue;
+Ticker ticker;
+
 double vl;  // m/s, desired velocity for left  wheels
 double vr;  // m/s, desired velocity for right wheels
+int leftCount = 0;
+int rightCount = 0;
 
 std_msgs::String out_msg;
 ros::Publisher pubOut("mbed_out", &out_msg);
@@ -76,11 +79,19 @@ void tuneCallback(const geometry_msgs::Point& msg) {
 ros::Subscriber<geometry_msgs::Point> tuneSub("tune", &tuneCallback);
 
 void tickerCallback() {
+  leftPID.step();
+  rightPID.step();
+
   if (vl != 0 && leftForward != (vl > 0)) {    // if motor direction needs to flip 
     if 	(leftPID < MAX_REVERSABLE) {
-      leftReverse = vl < 0;
-      leftForward = !leftReverse;
-      leftPID = fabs(vl);
+      if (leftCount < REVERSE_COUNT) 
+        leftCount ++;
+      else {
+        leftCount = 0;
+        leftReverse = vl < 0;
+        leftForward = !leftReverse;
+        leftPID = fabs(vl);
+      }
     }
     else
       leftPID = 0;
@@ -89,18 +100,28 @@ void tickerCallback() {
     leftPID = fabs(vl);
   if (vr != 0 && rightForward != (vr > 0)) {    // if motor direction needs to flip 
     if 	(rightPID < MAX_REVERSABLE) {
-      rightReverse = vr < 0;
-      rightForward = !rightReverse;
-      rightPID = fabs(vr);
+      if (rightCount < REVERSE_COUNT)
+        rightCount ++;
+      else {
+        rightCount = 0;
+        rightReverse = vr < 0;
+        rightForward = !rightReverse;
+        rightPID = fabs(vr);
+      }
     }
     else
       rightPID = 0;
   }
   else
     rightPID = fabs(vr);
+}
 
-  leftPID.step();
-  rightPID.step();
+void printWheelVel() {
+  std::string str = "vl= ";
+  str += std::to_string(leftPID.getFeedback());
+  str += ", vr= ";
+  str += std::to_string(rightPID.getFeedback());
+  pub(str.data());
 }
 
 int main() {
@@ -108,6 +129,11 @@ int main() {
     nh.subscribe(velocitySub);
     nh.subscribe(tuneSub);
     nh.advertise(pubOut);
+
+    rightForward = true;
+    rightReverse = false;
+    leftForward = true;
+    leftReverse = false;
 
     eventThread.start(
           Callback<void()>(&eventQueue, &EventQueue::dispatch_forever));
@@ -118,7 +144,8 @@ int main() {
     while (1) {
         nh.spinOnce();
         redLed = nh.connected();
-        wait_ms(20);
+	printWheelVel();
+        wait_ms(250);
     }
 }
 
