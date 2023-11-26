@@ -9,9 +9,10 @@
 class PID {
 public:
   PID(PinName feedbackPin, float hz2mps, PinName outputPin, float kp,
-        float ki, float kd, float sampleTime) :
-        feedback(feedbackPin, hz2mps, sampleTime), output(outputPin), kp(kp), ki(ki),
-        kd(kd), T(sampleTime) {
+            float ki, float kd, float sampleTime, float acceleration) :
+        feedback(feedbackPin, hz2mps, sampleTime), output(outputPin), 
+        kp(kp), ki(ki), kd(kd), T(sampleTime), ACCELERATION(acceleration),
+        VEL_STEP(acceleration * sampleTime) {
     
     output.period(T);
   };
@@ -34,12 +35,12 @@ public:
     setKd(d);
   }
 
-  void setReference(const float& ref) {
-    reference = ref;
+  void setTarget(const float& tar) {
+    target = tar;
   }
 
-  void operator = (const float& ref) {
-    setReference(ref);
+  void operator = (const float& tar) {
+    setTarget(tar);
   }
 
   operator float () {
@@ -53,6 +54,22 @@ public:
 
   void step() {
     feedback.update();
+
+    if (reference != target) {
+      if (target - reference > 0) {
+        if (reference + VEL_STEP < target)
+          reference += VEL_STEP;
+        else
+          reference = target;
+      }
+      else {
+        if (reference - VEL_STEP > target)
+          reference -= VEL_STEP;
+        else
+          reference = target;
+      }
+    }
+
     error = reference - feedback;
     rate = (error - prevError) / T;
     if (fequal(controlSignal, output.read()) || error * controlSignal < 0)
@@ -76,8 +93,11 @@ private:
   
   float kp, ki, kd;
   const float T;  // sample time
+  const float ACCELERATION;
+  const float VEL_STEP;
 
-  float reference;
+  float target = 0.0;
+  float reference = 0.0;
   float error;
   float prevError;
   float area;

@@ -15,15 +15,17 @@ const static float HZ2MPS = 1e-4;  // Scaling factor for tachometer, Hz/mps
 const static float KP = 0.3;
 const static float KI = 0.1;
 const static float KD = 0.0;
-const static float MAX_REVERSABLE = 0.001;
+const static float MAX_REVERSABLE = 0.001;  // m/s
 const static int REVERSE_COUNT = 20;
+const static float ACCELERATION = 0.1;  // m/s^2
+
 
 ros::NodeHandle nh;
 DigitalOut greenLed(LED_GREEN);
 DigitalOut redLed(LED_RED);
 
-PID leftPID(PTA12, HZ2MPS, PTC9, KP, KI, KD, SAMPLE_TIME);
-PID rightPID(PTD2, HZ2MPS, PTA13, KP, KI, KD, SAMPLE_TIME);
+PID leftPID(PTA12, HZ2MPS, PTC9, KP, KI, KD, SAMPLE_TIME, ACCELERATION);
+PID rightPID(PTD2, HZ2MPS, PTA13, KP, KI, KD, SAMPLE_TIME, ACCELERATION);
 
 DigitalOut leftForward(PTC8);
 DigitalOut leftReverse(PTA5);
