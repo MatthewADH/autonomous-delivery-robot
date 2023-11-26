@@ -59,9 +59,9 @@ public:
       area = prevArea + error * T;
 
     controlSignal  = kp * error + ki * area + kd * rate;
-    if (reference == 0) output = 0.2;
+    if (reference == 0) output = 0.0;
     else
-      output = 0.2; //clamp(controlSignal, MIN_DUTY, MAX_DUTY);
+      output = clamp(controlSignal, MIN_DUTY, MAX_DUTY);
 
     prevError = error;
     prevArea = area;

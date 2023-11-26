@@ -11,12 +11,12 @@
 
 const static double D = 0.4;  // m, distance between left and right wheels
 const static float SAMPLE_TIME = 1/50.0;
-const static float HZ2MPS = 3e-4;  // Scaling factor for tachometer, Hz/mps
+const static float HZ2MPS = 1e-4;  // Scaling factor for tachometer, Hz/mps
 const static float KP = 0.3;
 const static float KI = 0.1;
 const static float KD = 0.0;
 const static float MAX_REVERSABLE = 0.001;
-const static int REVERSE_COUNT = 10;
+const static int REVERSE_COUNT = 20;
 
 ros::NodeHandle nh;
 DigitalOut greenLed(LED_GREEN);
