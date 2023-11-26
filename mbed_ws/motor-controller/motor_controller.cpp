@@ -24,14 +24,14 @@ ros::NodeHandle nh;
 DigitalOut greenLed(LED_GREEN);
 DigitalOut redLed(LED_RED);
 
-PID leftPID(PTA12, HZ2MPS, PTC9, KP, KI, KD, SAMPLE_TIME, ACCELERATION);
-PID rightPID(PTD2, HZ2MPS, PTA13, KP, KI, KD, SAMPLE_TIME, ACCELERATION);
+PID leftPID(PTD2, HZ2MPS, PTA13, KP, KI, KD, SAMPLE_TIME, ACCELERATION);
+PID rightPID(PTA4, HZ2MPS, PTC9, KP, KI, KD, SAMPLE_TIME, ACCELERATION);
 
-DigitalOut leftForward(PTC8);
-DigitalOut leftReverse(PTA5);
+DigitalOut leftForward(PTD5);
+DigitalOut leftReverse(PTD0);
 
-DigitalOut rightForward(PTD5);
-DigitalOut rightReverse(PTD0);
+DigitalOut rightForward(PTC8);
+DigitalOut rightReverse(PTA5);
 
 Thread eventThread;
 EventQueue eventQueue;
