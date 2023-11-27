@@ -11,9 +11,9 @@
 
 const static double D = 0.4;  // m, distance between left and right wheels
 const static float SAMPLE_TIME = 1/50.0;
-const static float HZ2MPS = 1e-4;  // Scaling factor for tachometer, Hz/mps
+const static float HZ2MPS = 1e-3;  // Scaling factor for tachometer, Hz/mps
 const static float KP = 0.3;
-const static float KI = 0.1;
+const static float KI = 0.0;
 const static float KD = 0.0;
 const static float MAX_REVERSABLE = 0.001;  // m/s
 const static int REVERSE_COUNT = 20;
@@ -123,6 +123,10 @@ void printWheelVel() {
   str += std::to_string(leftPID.getFeedback());
   str += ", vr= ";
   str += std::to_string(rightPID.getFeedback());
+  str += ", Ld= ";
+  str += std::to_string(leftPID.read());
+  str += ", Rd= ";
+  str += std::to_string(rightPID.read());
   pub(str.data());
 }
 
@@ -147,7 +151,7 @@ int main() {
         nh.spinOnce();
         redLed = nh.connected();
 	printWheelVel();
-        wait_ms(250);
+        wait_ms(1000);
     }
 }
 

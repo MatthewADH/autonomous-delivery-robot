@@ -1,3 +1,3 @@
 #!/bin/bash
 
-make && cp KL25Z/motor_controller.bin /media/matthew/FRDM-KL25Z/
+make && cp KL25Z/motor_controller.bin /media/matthew/DAPLINK/

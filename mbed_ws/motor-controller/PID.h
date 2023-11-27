@@ -47,6 +47,9 @@ public:
     return output.read();
   }
 
+  float read () {
+    return output.read();
+  }
 
   float getFeedback() {
     return feedback;
@@ -55,7 +58,10 @@ public:
   void step() {
     feedback.update();
 
-    if (reference != target) {
+    if (target == 0) {
+      reference = 0;
+    }
+    else if (reference != target) {
       if (target - reference > 0) {
         if (reference + VEL_STEP < target)
           reference += VEL_STEP;
@@ -76,17 +82,17 @@ public:
       area = prevArea + error * T;
 
     controlSignal  = kp * error + ki * area + kd * rate;
-    if (reference == 0) output = 0.0;
-    else
-      output = clamp(controlSignal, MIN_DUTY, MAX_DUTY);
-
+    if (reference == 0) output = 0;
+    else output = clamp(controlSignal, MIN_DUTY, MAX_DUTY);
+    
     prevError = error;
     prevArea = area;
+    if (reference == 0 && feedback == 0) prevArea = 0;
   };
 
 private:
   constexpr static float MIN_DUTY = 0.0;
-  constexpr static float MAX_DUTY = 1.0;
+  constexpr static float MAX_DUTY = 0.4;
 
   Tachometer feedback;
   PwmOut output;  // Motor voltage control signal via varying duty cycle 
