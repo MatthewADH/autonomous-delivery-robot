@@ -2,7 +2,6 @@
 #define _MOTOR_CONTROLLER_pid_h
 
 #include <mbed.h>
-#include <math.h>
 
 #include "Tachometer.h"
 
@@ -123,7 +122,8 @@ private:
   };
 
   bool fequal (float x, float y, float eps = 0.0001) {
-    return fabs(x - y) < eps;
+    float dif = x - y;
+    return dif > -eps && dif < eps;
   };
 
 };

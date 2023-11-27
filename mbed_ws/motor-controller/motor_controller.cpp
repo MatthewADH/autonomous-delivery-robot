@@ -11,7 +11,7 @@
 
 const static double D = 0.4;  // m, distance between left and right wheels
 const static float SAMPLE_TIME = 1/50.0;
-const static float HZ2MPS = 1e-3;  // Scaling factor for tachometer, Hz/mps
+const static float HZ2MPS = 1e-4;  // Scaling factor for tachometer, Hz/mps
 const static float KP = 0.3;
 const static float KI = 0.0;
 const static float KD = 0.0;
@@ -144,10 +144,11 @@ int main() {
     eventThread.start(
           Callback<void()>(&eventQueue, &EventQueue::dispatch_forever));
     ticker.attach(
-          eventQueue.event(Callback<void()>(&tickerCallback)), SAMPLE_TIME);
+          //eventQueue.event(Callback<void()>(&tickerCallback)), SAMPLE_TIME);
+          &tickerCallback, SAMPLE_TIME);
 
 
-    while (1) {
+    while (true) {
         nh.spinOnce();
         redLed = nh.connected();
 	printWheelVel();

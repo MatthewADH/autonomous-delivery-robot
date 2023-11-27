@@ -37,7 +37,6 @@ private:
     const float UPDATE_PERIOD;
 
     int count = 0;
-    int numZeros = 0;
     float frequency;
 
 
